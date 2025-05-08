@@ -5,34 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LSGH Makeup Quiz Request Form</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </head>
 <body>
 <?php
-// // Run only if the form is submitted
-// if ($_SERVER["REQUEST_METHOD"] == "POST") {
-//     $conn = new mysqli("localhost", "root", "", "db2");
-//     // Check connection
-//     if ($conn->connect_error) {
-//         die("<div class='error-message'>Connection failed: " . $conn->connect_error . "</div>");
-//     }
-//     // Collect and sanitize form inputs
-//     $first_name = $conn->real_escape_string($_POST["first_name"]);
-//     $last_name = $conn->real_escape_string($_POST["last_name"]);
-//     $grade = $conn->real_escape_string($_POST["grade"]);
-//     $section = $conn->real_escape_string($_POST["section"]);
-//     $subject = $conn->real_escape_string($_POST["subject"]);
-//     $teacher = $conn->real_escape_string($_POST["teacher"]);
-//     $quiz_date = isset($_POST["quiz_date"]) ? $conn->real_escape_string($_POST["quiz_date"]) : '';
-//     // Insert query
-//     $sql = "INSERT INTO makeup_slips (first_name, last_name, grade_level, section, subject, teacher_name, quiz_date)
-//             VALUES ('$first_name', '$last_name', '$grade', '$section', '$subject', '$teacher', '$quiz_date')";
-//     if ($conn->query($sql) === TRUE) {
-//         echo "<div class='success-message'>Makeup slip submitted successfully!</div>";
-//     } else {
-//         echo "<div class='error-message'>Error: " . $conn->error . "</div>";
-//     }
-//     $conn->close();
-// }
+// Database connection
+$conn = new mysqli("localhost", "root", "", "db2");
+// Check connection
+if ($conn->connect_error) {
+    die("<div class='error-message'>Connection failed: " . $conn->connect_error . "</div>");
+}
+
+// Run only if the form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Collect and sanitize form inputs
+    $first_name = $conn->real_escape_string($_POST["first_name"]);
+    $last_name = $conn->real_escape_string($_POST["last_name"]);
+    $grade = $conn->real_escape_string($_POST["grade"]);
+    $section = $conn->real_escape_string($_POST["section"]);
+    $subject = $conn->real_escape_string($_POST["subject"]);
+    $teacher = $conn->real_escape_string($_POST["teacher"]);
+    $quiz_date = isset($_POST["quiz_date"]) ? $conn->real_escape_string($_POST["quiz_date"]) : '';
+    
+    // Insert query
+    $sql = "INSERT INTO makeup_slips (first_name, last_name, grade_level, section, subject, teacher_name, quiz_date)
+            VALUES ('$first_name', '$last_name', '$grade', '$section', '$subject', '$teacher', '$quiz_date')";
+    
+    if ($conn->query($sql) === TRUE) {
+        echo "<div class='success-message'>Makeup slip submitted successfully!</div>";
+    } else {
+        echo "<div class='error-message'>Error: " . $conn->error . "</div>";
+    }
+}
+
+// For debugging, let's see what values are in the database
+$teachersDebug = $conn->query("SELECT DISTINCT subject FROM teachers ORDER BY subject");
+$subjectsInDB = [];
+if ($teachersDebug && $teachersDebug->num_rows > 0) {
+    while ($row = $teachersDebug->fetch_assoc()) {
+        $subjectsInDB[] = $row['subject'];
+    }
+}
+
+$gradesDebug = $conn->query("SELECT DISTINCT grade_level FROM teachers ORDER BY grade_level");
+$gradesInDB = [];
+if ($gradesDebug && $gradesDebug->num_rows > 0) {
+    while ($row = $gradesDebug->fetch_assoc()) {
+        $gradesInDB[] = $row['grade_level'];
+    }
+}
 ?>
 
 <div class="container">
@@ -57,10 +78,20 @@
             <div class="form-group">
                 <label for="grade">Grade Level</label>
                 <select id="grade" name="grade" required>
-                    <option value="Kinder">Kinder</option>
-                    <?php for ($i = 1; $i <= 12; $i++): ?>
-                        <option value="Grade <?= $i ?>">Grade <?= $i ?></option>
-                    <?php endfor; ?>
+                    <?php 
+                    // Instead of hardcoding values, use what's in the database
+                    if (!empty($gradesInDB)) {
+                        foreach ($gradesInDB as $grade) {
+                            echo '<option value="' . htmlspecialchars($grade) . '">' . htmlspecialchars($grade) . '</option>';
+                        }
+                    } else {
+                        // Fallback to original values if no data in DB
+                        echo '<option value="Kinder">Kinder</option>';
+                        for ($i = 1; $i <= 12; $i++) {
+                            echo '<option value="Grade ' . $i . '">Grade ' . $i . '</option>';
+                        }
+                    }
+                    ?>
                 </select>
             </div>
             
@@ -77,27 +108,102 @@
         <div class="form-group">
             <label for="subject">Subject</label>
             <select id="subject" name="subject" required>
-                <option value="English">English</option>
-                <option value="Filipino">Filipino</option>
-                <option value="Math">Math</option>
-                <option value="Science">Science</option>
-                <option value="AP">AP</option>
+                <?php 
+                // Instead of hardcoding values, use what's in the database
+                if (!empty($subjectsInDB)) {
+                    foreach ($subjectsInDB as $subject) {
+                        echo '<option value="' . htmlspecialchars($subject) . '">' . htmlspecialchars($subject) . '</option>';
+                    }
+                } else {
+                    // Fallback to original values if no data in DB
+                    echo '<option value="English">English</option>';
+                    echo '<option value="Filipino">Filipino</option>';
+                    echo '<option value="Math">Math</option>';
+                    echo '<option value="Science">Science</option>';
+                    echo '<option value="AP">AP</option>';
+                }
+                ?>
             </select>
         </div>
         
         <div class="form-group">
             <label for="teacher">Teacher's Name</label>
-            <input type="text" id="teacher" name="teacher" required>
+            <select id="teacher" name="teacher" required>
+                <option value="">Select subject and grade level first</option>
+            </select>
         </div>
         
         <div class="form-group">
-            <label for="quiz_date">Date of Quiz</label>
-            <input type="date" id="quiz_date" name="quiz_date" required>
+            <label for="quiz_date">Date of Missed Quiz</label>
+            <input type="date" id="quiz_date" name="quiz_date" max="<?php echo date('Y-m-d'); ?>" required>
         </div>
         
-        <button type="submit">Submit Makeup Slip
-        </button>
+        <button type="submit">Submit Makeup Slip</button>
     </form>
+    
+    <!-- Debug info (hidden in production) -->
+    <!-- <div style="margin-top: 20px; padding: 10px; border: 1px solid #ddd; background: #f9f9f9;">
+        <h3>Debug Information:</h3>
+        <p>Subjects in database: <?php echo implode(", ", $subjectsInDB); ?></p>
+        <p>Grades in database: <?php echo implode(", ", $gradesInDB); ?></p>
+    </div> -->
 </div>
+
+<script>
+$(document).ready(function() {
+    // Function to update teachers dropdown based on subject and grade selection
+    function updateTeachers() {
+        var subject = $('#subject').val();
+        var grade = $('#grade').val();
+        
+        console.log("Selected Subject:", subject);
+        console.log("Selected Grade:", grade);
+        
+        // Skip the request if either field is empty
+        if (!subject || !grade) {
+            $('#teacher').html('<option value="">Please select both subject and grade</option>');
+            return;
+        }
+        
+        // Reset teacher dropdown
+        $('#teacher').html('<option value="">Loading teachers...</option>');
+        
+        // AJAX request to get teachers based on subject and grade
+        $.ajax({
+            url: 'get_teachers.php',
+            type: 'POST',
+            dataType: 'html',
+            data: {
+                subject: subject,
+                grade: grade
+            },
+            success: function(response) {
+                console.log("Response received:", response);
+                $('#teacher').html(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", status, error);
+                console.log("Response text:", xhr.responseText);
+                $('#teacher').html('<option value="">Error loading teachers</option>');
+            }
+        });
+    }
+    
+    // Update teachers when subject or grade changes
+    $('#subject, #grade').change(function() {
+        updateTeachers();
+    });
+    
+    // For debugging purposes - show the current selections
+    $('#subject, #grade').change(function() {
+        console.log("Updated selections - Subject:", $('#subject').val(), "Grade:", $('#grade').val());
+    });
+});
+</script>
+
+<?php
+// Close the database connection
+$conn->close();
+?>
 </body>
 </html>
