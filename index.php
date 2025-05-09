@@ -61,7 +61,17 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
         <h2>LSGH Makeup Quiz Request Form</h2>
     </div>
     
-    <form method="POST" action="check.php">
+    <form method="POST" action="teachers_email.php">
+        <!-- Data Privacy Agreement Checkbox -->
+        <div class="form-check mb-3" style="display: flex; align-items: flex-start; gap: 10px;">
+        <input class="form-check-input" type="checkbox" id="privacy_agree" name="privacy_agree" required style="margin-top: 4px;">
+        <label class="form-check-label" for="privacy_agree" style="font-weight: 400; line-height: 1.4;">
+            I agree to the <strong>Data Privacy Act</strong> terms and conditions regarding the 
+            collection and use of my personal information.
+        </label>
+        </div>
+
+
         <div class="form-row">
             <div class="form-group">
                 <label for="first_name">First Name</label>
@@ -105,6 +115,22 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
             </div>
         </div>
         
+        <div class="form-group" style="margin-bottom: 1rem;">
+        <label for="email" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+            Email Address
+        </label>
+        <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            required 
+            placeholder="Enter your email address"
+            pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;"
+        >
+        </div>
+
+
         <div class="form-group">
             <label for="subject">Subject</label>
             <select id="subject" name="subject" required>
