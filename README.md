@@ -3,11 +3,12 @@
 ![Screenshot 2025-05-09 125602](https://github.com/user-attachments/assets/7fd1d138-6629-4bc1-ac2b-5434832d5996)
 
 ## Features
-- Frontend uses HTML and CSS
-- Backend uses MySQL and PHP
 - Automatic Email to Parent/Student and Teacher
 - Admin Changable Grade Level, Subjects, and Teachers
-
+  
+## Tech Stack
+- **Frontend:** HTML and CSS
+- **Backend:** MySQL and PHP
 
 
 ## Requirements
@@ -18,6 +19,39 @@ To run this project, you will need to have XAMPP installed
 
 
 ## Troubleshooting
+
+To configure the email, go to C:xampp\php and open the `Php.ini` then go the `[mail function]` and edit these
+
+```bash
+  [mail function]
+  For Win32 only.
+  http://php.net/smtp
+  SMTP=smtp.gmail.com
+  http://php.net/smtp-port
+  smtp_port=587
+  sendmail_from = youremailaddress@gmail.com
+  sendmail_path = "\"C:\xampp\sendmail\sendmail.exe\" -t"
+```
+
+If you don't have your google app password for your email address then go here
+
+[App Password](https://myaccount.google.com/apppasswords)
+[Documentation](https://support.google.com/accounts/answer/185833?hl=en#:~:text=Create%20%26%20use%20App%20Passwords)
+
+
+Next go to C:xampp\sendmail and open the `sendmail.ini` then go the `[sendmail]` and edit these
+
+```bash
+  smtp_server=smtp.gmail.com
+  smtp_port=587
+  error_logfile=error.log
+  debug_logfile=debug.log
+  auth_username=youremailaddress@gmail.com
+  auth_password=google_app_password
+  force_sender=youremailaddress@gmail.com (OPTIONAL)
+```
+
+### Helpful Guides for the Email
 
 [Email Feature Steps](https://www.codingnepalweb.com/configure-xampp-to-send-mail-from-localhost/)
 
