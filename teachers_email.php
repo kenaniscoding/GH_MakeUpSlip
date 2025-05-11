@@ -1,6 +1,6 @@
 <?php
 // Database connection
-$conn = new mysqli("localhost", "root", "", "db2");
+$conn = new mysqli("localhost", "root", "", "db");
 
 // Check connection
 if ($conn->connect_error) {
@@ -9,7 +9,7 @@ if ($conn->connect_error) {
 /////////////////////////////////////////////////////////////////////////////////
 // Run only if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $conn = new mysqli("localhost", "root", "", "db2");
+    $conn = new mysqli("localhost", "root", "", "db");
 
     // Check connection
     if ($conn->connect_error) {
@@ -23,18 +23,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $section = $conn->real_escape_string($_POST["section"]);
     $subject = $conn->real_escape_string($_POST["subject"]);
     $teacher = $conn->real_escape_string($_POST["teacher"]);
-    $quiz_date = isset($_POST["quiz_date"]) ? $conn->real_escape_string($_POST["quiz_date"]) : '';
+    $start_date = isset($_POST["start_date"]) ? $conn->real_escape_string($_POST["start_date"]) : '';
+    $end_date = isset($_POST["end_date"]) ? $conn->real_escape_string($_POST["end_date"]) : '';
     $email = $conn->real_escape_string($_POST["email"]); // NEW: get and sanitize email
+    $reason = $conn->real_escape_string($_POST["reason"]); // NEW: get and sanitize email
 
     // Insert query with email
-    $sql = "INSERT INTO makeup_slips (first_name, last_name, grade_level, section, subject, teacher_name, quiz_date, email)
-            VALUES ('$first_name', '$last_name', '$grade', '$section', '$subject', '$teacher', '$quiz_date', '$email')";
+    $sql = "INSERT INTO makeup_slips (first_name, last_name, grade_level, section, subject, teacher_name, start_date, end_date, email, reason)
+            VALUES ('$first_name', '$last_name', '$grade', '$section', '$subject', '$teacher', '$start_date', '$end_date', '$email', '$reason')";
 
     if ($conn->query($sql) === TRUE) {
         // Send email to the inputted email address (user)
         // THIS IS THE STUDENT/PARENT'S EMAIL CONTENT
         $userSubject = "Makeup Slip Submission Confirmation";
-        $userBody = "Dear $first_name $last_name,\n\nThank you for your submission. This is a confirmation that we have received your makeup slip request for $subject under $teacher scheduled on $quiz_date.\n\nWe will contact you if further information is needed.\n\nBest regards,\nAcademic Office";
+        $userBody = "Dear $first_name $last_name,\n\nThank you for your submission. This is a confirmation that we have received your makeup slip request for $subject under $teacher scheduled on $start_date.\n\nWe will contact you if further information is needed.\n\nBest regards,\nAcademic Office";
 
         // Call the sendEmail function to notify the user
         // Send confirmation email to the student
@@ -49,7 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $teacherEmail = $teacherRow['email'];
             // THIS IS THE TEACHER'S EMAIL CONTENT
             $teacherSubject = "Makeup Slip Request Notification";
-            $teacherBody = "Dear $teacher,\n\nA new makeup slip request has been submitted by $first_name $last_name for the subject $subject scheduled on $quiz_date.\n\nPlease review this request at your earliest convenience.\n\nBest regards,\nAcademic Office";
+            $teacherBody = "Dear $teacher,\n\nA new makeup slip request has been submitted by $first_name $last_name for the subject $subject scheduled on $start_date.\n\nPlease review this request at your earliest convenience.\n\nBest regards,\nAcademic Office";
 
             sendEmail($teacherEmail, $teacherSubject, $teacherBody);
         }

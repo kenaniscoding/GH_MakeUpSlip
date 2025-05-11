@@ -10,33 +10,36 @@
 <body>
 <?php
 // Database connection
-$conn = new mysqli("localhost", "root", "", "db2");
+$conn = new mysqli("localhost", "root", "", "db");
 // Check connection
 if ($conn->connect_error) {
     die("<div class='error-message'>Connection failed: " . $conn->connect_error . "</div>");
 }
 
-// Run only if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Collect and sanitize form inputs
-    $first_name = $conn->real_escape_string($_POST["first_name"]);
-    $last_name = $conn->real_escape_string($_POST["last_name"]);
-    $grade = $conn->real_escape_string($_POST["grade"]);
-    $section = $conn->real_escape_string($_POST["section"]);
-    $subject = $conn->real_escape_string($_POST["subject"]);
-    $teacher = $conn->real_escape_string($_POST["teacher"]);
-    $quiz_date = isset($_POST["quiz_date"]) ? $conn->real_escape_string($_POST["quiz_date"]) : '';
+// //DELETE THIS???????????
+// // Run only if the form is submitted
+// if ($_SERVER["REQUEST_METHOD"] == "POST") {
+//     // Collect and sanitize form inputs
+//     $first_name = $conn->real_escape_string($_POST["first_name"]);
+//     $last_name = $conn->real_escape_string($_POST["last_name"]);
+//     $grade = $conn->real_escape_string($_POST["grade"]);
+//     $section = $conn->real_escape_string($_POST["section"]);
+//     $subject = $conn->real_escape_string($_POST["subject"]);
+//     $teacher = $conn->real_escape_string($_POST["teacher"]);
+//     $quiz_date = isset($_POST["quiz_date"]) ? $conn->real_escape_string($_POST["quiz_date"]) : '';
     
-    // Insert query
-    $sql = "INSERT INTO makeup_slips (first_name, last_name, grade_level, section, subject, teacher_name, quiz_date)
-            VALUES ('$first_name', '$last_name', '$grade', '$section', '$subject', '$teacher', '$quiz_date')";
+//     // Insert query
+//     $sql = "INSERT INTO makeup_slips (first_name, last_name, grade_level, section, subject, teacher_name, quiz_date)
+//             VALUES ('$first_name', '$last_name', '$grade', '$section', '$subject', '$teacher', '$quiz_date')";
     
-    if ($conn->query($sql) === TRUE) {
-        echo "<div class='success-message'>Makeup slip submitted successfully!</div>";
-    } else {
-        echo "<div class='error-message'>Error: " . $conn->error . "</div>";
-    }
-}
+//     if ($conn->query($sql) === TRUE) {
+//         echo "<div class='success-message'>Makeup slip submitted successfully!</div>";
+//     } else {
+//         echo "<div class='error-message'>Error: " . $conn->error . "</div>";
+//     }
+// }
+// //DELETE THIS???????????
+
 
 // For debugging, let's see what values are in the database
 $teachersDebug = $conn->query("SELECT DISTINCT subject FROM teachers ORDER BY subject");
@@ -116,7 +119,7 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
         </div>
         
         <div class="form-group" style="margin-bottom: 1rem;">
-        <label for="email" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+        <label for="email">
             Email Address
         </label>
         <input 
@@ -126,6 +129,20 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
             required 
             placeholder="Enter your email address"
             pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+            style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;"
+        >
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+        <label for="reason">
+            Reason of Absence
+        </label>
+        <input 
+            type="text" 
+            id="reason" 
+            name="reason" 
+            required 
+            placeholder="Enter your reason for absence"
             style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem;"
         >
         </div>
@@ -160,8 +177,13 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
         </div>
         
         <div class="form-group">
-            <label for="quiz_date">Date of Missed Quiz</label>
-            <input type="date" id="quiz_date" name="quiz_date" max="<?php echo date('Y-m-d'); ?>" required>
+            <label for="start_date">Start Absent Date</label>
+            <input type="date" id="start_date" name="start_date" max="<?php echo date('Y-m-d'); ?>" required>
+        </div>
+
+        <div class="form-group">
+            <label for="end_date">End Absent Date</label>
+            <input type="date" id="end_date" name="end_date" max="<?php echo date('Y-m-d'); ?>" required>
         </div>
         
         <button type="submit">Submit Makeup Slip</button>
