@@ -6,7 +6,7 @@ $conn = new mysqli("localhost", "root", "", "db");
 if ($conn->connect_error) {
     die("<div class='error-message'>Connection failed: " . $conn->connect_error . "</div>");
 }
-/////////////////////////////////////////////////////////////////////////////////
+
 // Run only if the form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn = new mysqli("localhost", "root", "", "db");
@@ -36,7 +36,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Send email to the inputted email address (user)
         // THIS IS THE STUDENT/PARENT'S EMAIL CONTENT
         $userSubject = "Makeup Slip Submission Confirmation";
-        $userBody = "Dear $first_name $last_name,\n\nThank you for your submission. This is a confirmation that we have received your makeup slip request for $subject under $teacher scheduled on $start_date.\n\nWe will contact you if further information is needed.\n\nBest regards,\nAcademic Office";
+        $userBody = "Dear $first_name $last_name,\n\nThank you for your submission. 
+        This is a confirmation that we have received your makeup slip request for $subject 
+        under $teacher.\n\nWe will contact you if 
+        further information is needed.\n\nBest regards,\nAcademic Office";
 
         // Call the sendEmail function to notify the user
         // Send confirmation email to the student
@@ -51,28 +54,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $teacherEmail = $teacherRow['email'];
             // THIS IS THE TEACHER'S EMAIL CONTENT
             $teacherSubject = "Makeup Slip Request Notification";
-            $teacherBody = "Dear $teacher,\n\nA new makeup slip request has been submitted by $first_name $last_name for the subject $subject scheduled on $start_date.\n\nPlease review this request at your earliest convenience.\n\nBest regards,\nAcademic Office";
+            $teacherBody = "Dear $teacher,\n\nA $grade student at section $section who goes by
+             $first_name $last_name was absent from $subject on $start_date due to $reason. Likewise, He/She kindly 
+            filled up the makeup slip and request to retake the missed quiz.
+            \n\nPlease review this request at your 
+            earliest convenience.\n\nBest regards,\nAcademic Office";
 
             sendEmail($teacherEmail, $teacherSubject, $teacherBody);
         }
 
         echo "
+        <!DOCTYPE html>
+        <html lang='en'>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+            <title>LSGH Makeup Quiz Request Form</title>
+            <link rel='stylesheet' href='style.css'>
+            <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
+        </head>
+
         <div class='container'>
             <div class='header'>
-                <h2>Thank You!</h2>
+            <h2>Thank You!</h2>
             </div>
             <div class='success-message'>
-                Your submission has been received successfully. A confirmation email has been sent to <strong>$email</strong>.
+                Your submission has been received successfully. A confirmation email has been sent to you <strong>$email</strong>
+                and to your teacher <strong>$teacher</strong>.
             </div>
             <p>We’ll get back to you as soon as possible. If you have any further questions, feel free to contact us anytime.</p>
         </div>
         ";
     }
-
-
-    // $conn->close();
 }
-/////////////////////////////////////////////////////////////////////////////////
+
 // Function to get table structure
 function getTableColumns($conn, $tableName) {
     $columns = [];
