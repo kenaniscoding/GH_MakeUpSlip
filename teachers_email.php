@@ -36,10 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Send email to the inputted email address (user)
         // THIS IS THE STUDENT/PARENT'S EMAIL CONTENT
         $userSubject = "Makeup Slip Submission Confirmation";
-        $userBody = "Dear $first_name $last_name,\n\nThank you for your submission. 
-        This is a confirmation that we have received your makeup slip request for $subject 
-        under $teacher.\n\nWe will contact you if 
-        further information is needed.\n\nBest regards,\nAcademic Office";
+        $userBody = "Dear $first_name $last_name,\n\nThank you for your submission. This is a confirmation that we have received your makeup slip request for $subject under $teacher.\n\nWe will contact you if further information is needed.\n\nBest regards,\nAcademic Office";
 
         // Call the sendEmail function to notify the user
         // Send confirmation email to the student
@@ -54,12 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $teacherEmail = $teacherRow['email'];
             // THIS IS THE TEACHER'S EMAIL CONTENT
             $teacherSubject = "Makeup Slip Request Notification";
-            $teacherBody = "Dear $teacher,\n\nA $grade student at section $section who goes by
-             $first_name $last_name was absent from $subject on $start_date due to $reason. Likewise, He/She kindly 
-            filled up the makeup slip and request to retake the missed quiz.
-            \n\nPlease review this request at your 
-            earliest convenience.\n\nBest regards,\nAcademic Office";
-
+            $teacherBody = "Dear $teacher,\n\nA $grade student at section $section who goes by$first_name $last_name was absent from $subject on $start_date due to $reason. Likewise, He/She kindly filled up the makeup slip and request to retake the missed quiz.\n\nPlease review this request at your earliest convenience.\n\nBest regards,\nAcademic Office";
             sendEmail($teacherEmail, $teacherSubject, $teacherBody);
         }
 
@@ -86,6 +78,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
         ";
     }
+
+    // Load template
+    $template = file_get_contents('template.tex');
+
+    // Replace placeholders
+    $replacements = [
+        '{{first_name}}' => $first_name,
+        '{{last_name}}' => $last_name,
+        '{{grade}}' => $grade,
+        '{{section}}' => $section,
+        '{{subject}}' => $subject,
+        '{{teacher}}' => $teacher,
+        '{{start_date}}' => $start_date,
+        '{{end_date}}' => $end_date,
+        '{{email}}' => $email,
+        '{{reason}}' => $reason,
+    ];
+
+    $filled_tex = strtr($template, $replacements);
+
+    // Save the filled LaTeX to a temporary file
+    $texFile = tempnam(sys_get_temp_dir(), 'filled_') . '.tex';
+    file_put_contents($texFile, $filled_tex);
+
+    // Compile the LaTeX to PDF using `pdflatex`
+    $outputDir = dirname($texFile);
+    $filenameWithoutExt = basename($texFile, '.tex');
+    chdir($outputDir);
+    exec("pdflatex -interaction=nonstopmode $texFile");
+
+    // Return PDF to browser
+    $pdfFile = "$filenameWithoutExt.pdf";
+    if (file_exists($pdfFile)) {
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="report.pdf"');
+        readfile($pdfFile);
+    } else {
+        echo "PDF generation failed.";
+    }
+
 }
 
 // Function to get table structure

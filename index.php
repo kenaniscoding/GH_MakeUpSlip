@@ -32,6 +32,7 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
         $gradesInDB[] = $row['grade_level'];
     }
 }
+
 ?>
 
 <div class="container">
