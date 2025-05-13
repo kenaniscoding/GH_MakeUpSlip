@@ -1,4 +1,7 @@
 <?php
+// Start output buffering to prevent any accidental output before PDF generation
+ob_start();
+
 // Database connection
 $conn = new mysqli("localhost", "root", "", "db");
 
@@ -7,117 +10,15 @@ if ($conn->connect_error) {
     die("<div class='error-message'>Connection failed: " . $conn->connect_error . "</div>");
 }
 
-// Run only if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $conn = new mysqli("localhost", "root", "", "db");
-
-    // Check connection
-    if ($conn->connect_error) {
-        die("<div class='error-message'>Connection failed: " . $conn->connect_error . "</div>");
-    }
-
-    // Collect and sanitize form inputs
-    $first_name = $conn->real_escape_string($_POST["first_name"]);
-    $last_name = $conn->real_escape_string($_POST["last_name"]);
-    $grade = $conn->real_escape_string($_POST["grade"]);
-    $section = $conn->real_escape_string($_POST["section"]);
-    $subject = $conn->real_escape_string($_POST["subject"]);
-    $teacher = $conn->real_escape_string($_POST["teacher"]);
-    $start_date = isset($_POST["start_date"]) ? $conn->real_escape_string($_POST["start_date"]) : '';
-    $end_date = isset($_POST["end_date"]) ? $conn->real_escape_string($_POST["end_date"]) : '';
-    $email = $conn->real_escape_string($_POST["email"]); // NEW: get and sanitize email
-    $reason = $conn->real_escape_string($_POST["reason"]); // NEW: get and sanitize email
-
-    // Insert query with email
-    $sql = "INSERT INTO makeup_slips (first_name, last_name, grade_level, section, subject, teacher_name, start_date, end_date, email, reason)
-            VALUES ('$first_name', '$last_name', '$grade', '$section', '$subject', '$teacher', '$start_date', '$end_date', '$email', '$reason')";
-
-    if ($conn->query($sql) === TRUE) {
-        // Send email to the inputted email address (user)
-        // THIS IS THE STUDENT/PARENT'S EMAIL CONTENT
-        $userSubject = "Makeup Slip Submission Confirmation";
-        $userBody = "Dear $first_name $last_name,\n\nThank you for your submission. This is a confirmation that we have received your makeup slip request for $subject under $teacher.\n\nWe will contact you if further information is needed.\n\nBest regards,\nAcademic Office";
-
-        // Call the sendEmail function to notify the user
-        // Send confirmation email to the student
-        sendEmail($email, $userSubject, $userBody);
-
-        // Now send the same email to the specific teacher selected
-        $teacherEmailQuery = "SELECT email FROM teachers WHERE teacher_name = '$teacher' LIMIT 1";
-        $teacherEmailResult = $conn->query($teacherEmailQuery);
-
-        if ($teacherEmailResult && $teacherEmailResult->num_rows > 0) {
-            $teacherRow = $teacherEmailResult->fetch_assoc();
-            $teacherEmail = $teacherRow['email'];
-            // THIS IS THE TEACHER'S EMAIL CONTENT
-            $teacherSubject = "Makeup Slip Request Notification";
-            $teacherBody = "Dear $teacher,\n\nA $grade student at section $section who goes by$first_name $last_name was absent from $subject on $start_date due to $reason. Likewise, He/She kindly filled up the makeup slip and request to retake the missed quiz.\n\nPlease review this request at your earliest convenience.\n\nBest regards,\nAcademic Office";
-            sendEmail($teacherEmail, $teacherSubject, $teacherBody);
-        }
-
-        echo "
-        <!DOCTYPE html>
-        <html lang='en'>
-        <head>
-            <meta charset='UTF-8'>
-            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-            <title>LSGH Makeup Quiz Request Form</title>
-            <link rel='stylesheet' href='style.css'>
-            <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
-        </head>
-
-        <div class='container'>
-            <div class='header'>
-            <h2>Thank You!</h2>
-            </div>
-            <div class='success-message'>
-                Your submission has been received successfully. A confirmation email has been sent to you <strong>$email</strong>
-                and to your teacher <strong>$teacher</strong>.
-            </div>
-            <p>We’ll get back to you as soon as possible. If you have any further questions, feel free to contact us anytime.</p>
-        </div>
-        ";
-    }
-
-    // Load template
-    $template = file_get_contents('template.tex');
-
-    // Replace placeholders
-    $replacements = [
-        '{{first_name}}' => $first_name,
-        '{{last_name}}' => $last_name,
-        '{{grade}}' => $grade,
-        '{{section}}' => $section,
-        '{{subject}}' => $subject,
-        '{{teacher}}' => $teacher,
-        '{{start_date}}' => $start_date,
-        '{{end_date}}' => $end_date,
-        '{{email}}' => $email,
-        '{{reason}}' => $reason,
-    ];
-
-    $filled_tex = strtr($template, $replacements);
-
-    // Save the filled LaTeX to a temporary file
-    $texFile = tempnam(sys_get_temp_dir(), 'filled_') . '.tex';
-    file_put_contents($texFile, $filled_tex);
-
-    // Compile the LaTeX to PDF using `pdflatex`
-    $outputDir = dirname($texFile);
-    $filenameWithoutExt = basename($texFile, '.tex');
-    chdir($outputDir);
-    exec("pdflatex -interaction=nonstopmode $texFile");
-
-    // Return PDF to browser
-    $pdfFile = "$filenameWithoutExt.pdf";
-    if (file_exists($pdfFile)) {
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: inline; filename="report.pdf"');
-        readfile($pdfFile);
+// Function to send email
+function sendEmail($receiver, $subject, $body) {
+    $sender = "From: kenanbanal3@gmail.com";
+    
+    if(mail($receiver, $subject, $body, $sender)) {
+        return true;
     } else {
-        echo "PDF generation failed.";
+        return false;
     }
-
 }
 
 // Function to get table structure
@@ -134,15 +35,302 @@ function getTableColumns($conn, $tableName) {
     return $columns;
 }
 
-// Function to send email
-function sendEmail($receiver, $subject, $body) {
-    $sender = "From: kenanbanal3@gmail.com";
+// Run only if the form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Check if "generate_pdf" is set in the POST data
+    $generate_pdf = isset($_POST["generate_pdf"]) && $_POST["generate_pdf"] == "1";
+
+    // Collect and sanitize form inputs
+    $first_name = $conn->real_escape_string($_POST["first_name"]);
+    $last_name = $conn->real_escape_string($_POST["last_name"]);
+    $grade = $conn->real_escape_string($_POST["grade"]);
+    $section = $conn->real_escape_string($_POST["section"]);
+    $subject = $conn->real_escape_string($_POST["subject"]);
+    $teacher = $conn->real_escape_string($_POST["teacher"]);
+    $start_date = isset($_POST["start_date"]) ? $conn->real_escape_string($_POST["start_date"]) : '';
+    $end_date = isset($_POST["end_date"]) ? $conn->real_escape_string($_POST["end_date"]) : '';
+    $email = $conn->real_escape_string($_POST["email"]);
+    $reason = $conn->real_escape_string($_POST["reason"]);
+
+    // Generate PDF regardless of download request (we need it for email attachments)
+    require('fpdf/fpdf.php');
     
-    if(mail($receiver, $subject, $body, $sender)) {
-        return true;
-    } else {
-        return false;
+    $title = 'Makeup Quiz Request Form';
+    $pdf = new FPDF();
+    $pdf->AddPage();
+    $pdf->SetTitle($title);
+
+    // Set up logo and header
+    $pdf->SetFont('Arial', 'B', 16);
+    // Add a title at the top
+    $pdf->Cell(0, 10, 'LA SALLE GREEN HILLS', 0, 1, 'C');
+    $pdf->SetFont('Arial', 'B', 14);
+    $pdf->Cell(0, 10, 'MAKEUP QUIZ REQUEST FORM', 0, 1, 'C');
+    $pdf->Ln(5);
+    
+    // Define table width
+    $tableWidth = 180;
+    $labelWidth = 50;
+    $valueWidth = $tableWidth - $labelWidth;
+    
+    // Student Information Section
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, 'Student Information', 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    
+    // Draw rectangle around student info
+    $pdf->SetDrawColor(0, 0, 0);
+    $startY = $pdf->GetY();
+    
+    // Name
+    $pdf->Cell($labelWidth, 8, 'Name:', 0, 0, 'L');
+    $pdf->Cell($valueWidth, 8, $first_name . ' ' . $last_name, 0, 1, 'L');
+    
+    // Grade & Section
+    $pdf->Cell($labelWidth, 8, 'Grade & Section:', 0, 0, 'L');
+    $pdf->Cell($valueWidth, 8, "$grade - $section", 0, 1, 'L');
+    
+    // Email
+    $pdf->Cell($labelWidth, 8, 'Email:', 0, 0, 'L');
+    $pdf->Cell($valueWidth, 8, $email, 0, 1, 'L');
+    
+    // Draw box around student info
+    $endY = $pdf->GetY();
+    $pdf->Rect(10, $startY - 2, $tableWidth, $endY - $startY + 4);
+    
+    $pdf->Ln(5);
+    
+    // Class Information Section
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, 'Class Information', 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    
+    // Draw rectangle around class info
+    $startY = $pdf->GetY();
+    
+    // Subject
+    $pdf->Cell($labelWidth, 8, 'Subject:', 0, 0, 'L');
+    $pdf->Cell($valueWidth, 8, $subject, 0, 1, 'L');
+    
+    // Teacher
+    $pdf->Cell($labelWidth, 8, 'Teacher:', 0, 0, 'L');
+    $pdf->Cell($valueWidth, 8, $teacher, 0, 1, 'L');
+    
+    // Draw box around class info
+    $endY = $pdf->GetY();
+    $pdf->Rect(10, $startY - 2, $tableWidth, $endY - $startY + 4);
+    
+    $pdf->Ln(5);
+    
+    // Absence Information Section
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, 'Absence Information', 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    
+    // Draw rectangle around absence info
+    $startY = $pdf->GetY();
+    
+    // Absence Date
+    $pdf->Cell($labelWidth, 8, 'Start Date:', 0, 0, 'L');
+    $pdf->Cell($valueWidth, 8, $start_date, 0, 1, 'L');
+    
+    // End Date (if applicable)
+    if (!empty($end_date)) {
+        $pdf->Cell($labelWidth, 8, 'End Date:', 0, 0, 'L');
+        $pdf->Cell($valueWidth, 8, $end_date, 0, 1, 'L');
     }
+    
+    // Reason for Absence
+    $pdf->Cell($labelWidth, 8, 'Reason:', 0, 0, 'L');
+    
+    // Calculate how many lines the reason will take
+    $reasonLines = $pdf->GetStringWidth($reason) > $valueWidth ? 
+                    ceil($pdf->GetStringWidth($reason) / $valueWidth) : 1;
+    
+    if ($reasonLines > 1) {
+        $pdf->MultiCell($valueWidth, 8, $reason, 0, 'L');
+    } else {
+        $pdf->Cell($valueWidth, 8, $reason, 0, 1, 'L');
+    }
+    
+    // Draw box around absence info
+    $endY = $pdf->GetY();
+    $pdf->Rect(10, $startY - 2, $tableWidth, $endY - $startY + 4);
+    
+    $pdf->Ln(10);
+    
+    // Add teacher signature section
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, 'Teacher Approval', 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    
+    $pdf->Cell(90, 10, 'Signature: _________________________', 0, 0, 'L');
+    $pdf->Cell(90, 10, 'Date: _______________', 0, 1, 'L');
+    
+    $pdf->Ln(5);
+    
+    // Add office signature section
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, 'Academic Office', 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 10);
+    
+    $pdf->Cell(90, 10, 'Signature: _________________________', 0, 0, 'L');
+    $pdf->Cell(90, 10, 'Date: _______________', 0, 1, 'L');
+    
+    $pdf->Ln(10);
+    
+    // Add footer note
+    $pdf->SetFont('Arial', 'I', 8);
+    $pdf->Cell(0, 10, 'This form must be submitted to the teacher within three days of returning to school.', 0, 1, 'L');
+    $pdf->Cell(0, 10, 'Form generated on ' . date('F j, Y, g:i a'), 0, 1, 'L');
+    
+    // Save PDF to file before we do anything else with it
+    $pdfFileName = 'makeup_request_' . $first_name . '_' . $last_name . '.pdf';
+    $pdfFilePath = 'temp_pdfs/' . $pdfFileName;
+    
+    // Make sure the directory exists
+    if (!is_dir('temp_pdfs')) {
+        mkdir('temp_pdfs', 0755, true);
+    }
+    
+    // Save the PDF to the server
+    $pdf->Output('F', $pdfFilePath);
+    
+    // If we need to directly download PDF
+    if ($generate_pdf || isset($_POST["download_pdf"])) {
+        // Clean any previous output
+        ob_end_clean();
+        // Output PDF file as download
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $pdfFileName . '"');
+        readfile($pdfFilePath);
+        exit;
+    }
+
+    // Continue with the normal form processing
+    // Insert query with email
+    $sql = "INSERT INTO makeup_slips (first_name, last_name, grade_level, section, subject, teacher_name, start_date, end_date, email, reason)
+            VALUES ('$first_name', '$last_name', '$grade', '$section', '$subject', '$teacher', '$start_date', '$end_date', '$email', '$reason')";
+
+    if ($conn->query($sql) === TRUE) {
+        // Send email to the student/parent with the PDF attachment
+        $userSubject = "Makeup Slip Submission Confirmation";
+        $userBody = "Dear $first_name $last_name,\n\nThank you for your submission. This is a confirmation that we have received your makeup slip request for $subject under $teacher.\n\nWe will contact you if further information is needed.\n\nPlease find attached a copy of your makeup quiz request form.\n\nBest regards,\nAcademic Office";
+
+        // Prepare the email with attachment to the student
+        // Read the file
+        $handle = fopen($pdfFilePath, "r");
+        $content = fread($handle, filesize($pdfFilePath));
+        fclose($handle);
+        
+        // Base64 encode the content
+        $encoded_content = chunk_split(base64_encode($content));
+        
+        // Generate a boundary
+        $boundary = md5(time());
+        
+        // Headers
+        $headers = "MIME-Version: 1.0\r\n";
+        $headers .= "From: kenanbanal3@gmail.com\r\n";
+        $headers .= "Reply-To: kenanbanal3@gmail.com\r\n";
+        $headers .= "Content-Type: multipart/mixed; boundary=$boundary\r\n";
+        
+        // Email body with attachment
+        $message = "--$boundary\r\n";
+        $message .= "Content-Type: text/plain; charset=ISO-8859-1\r\n";
+        $message .= "Content-Transfer-Encoding: base64\r\n\r\n";
+        $message .= chunk_split(base64_encode($userBody)) . "\r\n";
+        
+        // Attachment
+        $message .= "--$boundary\r\n";
+        $message .= "Content-Type: application/pdf; name=\"$pdfFileName\"\r\n";
+        $message .= "Content-Disposition: attachment; filename=\"$pdfFileName\"\r\n";
+        $message .= "Content-Transfer-Encoding: base64\r\n";
+        $message .= "X-Attachment-Id: " . rand(1000, 99999) . "\r\n\r\n";
+        $message .= $encoded_content . "\r\n";
+        $message .= "--$boundary--";
+        
+        // Send email to student
+        mail($email, $userSubject, $message, $headers);
+
+        // Now send the same email with attachment to the teacher
+        $teacherEmailQuery = "SELECT email FROM teachers WHERE teacher_name = '$teacher' LIMIT 1";
+        $teacherEmailResult = $conn->query($teacherEmailQuery);
+
+        if ($teacherEmailResult && $teacherEmailResult->num_rows > 0) {
+            $teacherRow = $teacherEmailResult->fetch_assoc();
+            $teacherEmail = $teacherRow['email'];
+            
+            $teacherSubject = "Makeup Slip Request Notification";
+            $teacherBody = "Dear $teacher,\n\nA $grade student at section $section who goes by $first_name $last_name was absent from $subject on $start_date due to $reason. Likewise, He/She kindly filled up the makeup slip and request to retake the missed quiz.\n\nPlease review this request at your earliest convenience. The makeup slip request form is attached to this email.\n\nBest regards,\nAcademic Office";
+            
+            // Prepare teacher email with attachment
+            $teacher_message = "--$boundary\r\n";
+            $teacher_message .= "Content-Type: text/plain; charset=ISO-8859-1\r\n";
+            $teacher_message .= "Content-Transfer-Encoding: base64\r\n\r\n";
+            $teacher_message .= chunk_split(base64_encode($teacherBody)) . "\r\n";
+            
+            // Attachment
+            $teacher_message .= "--$boundary\r\n";
+            $teacher_message .= "Content-Type: application/pdf; name=\"$pdfFileName\"\r\n";
+            $teacher_message .= "Content-Disposition: attachment; filename=\"$pdfFileName\"\r\n";
+            $teacher_message .= "Content-Transfer-Encoding: base64\r\n";
+            $teacher_message .= "X-Attachment-Id: " . rand(1000, 99999) . "\r\n\r\n";
+            $teacher_message .= $encoded_content . "\r\n";
+            $teacher_message .= "--$boundary--";
+            
+            // Send email to teacher
+            mail($teacherEmail, $teacherSubject, $teacher_message, $headers);
+        }
+
+        // Show success message with PDF download option
+        echo "
+        <!DOCTYPE html>
+        <html lang='en'>
+        <head>
+            <meta charset='UTF-8'>
+            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+            <title>LSGH Makeup Quiz Request Form</title>
+            <link rel='stylesheet' href='style.css'>
+            <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
+        </head>
+
+        <div class='container'>
+            <div class='header'>
+                <h2>Thank You!</h2>
+            </div>
+            <div class='success-message'>
+                Your submission has been received successfully. A confirmation email with the PDF form has been sent to you <strong>$email</strong>
+                and to your teacher <strong>$teacher</strong>.
+            </div>
+            <p>We'll get back to you as soon as possible. If you have any further questions, feel free to contact us anytime.</p>
+            
+            <div class='pdf-download'>
+                <form method='post' action=''>
+                    <input type='hidden' name='first_name' value='$first_name'>
+                    <input type='hidden' name='last_name' value='$last_name'>
+                    <input type='hidden' name='grade' value='$grade'>
+                    <input type='hidden' name='section' value='$section'>
+                    <input type='hidden' name='subject' value='$subject'>
+                    <input type='hidden' name='teacher' value='$teacher'>
+                    <input type='hidden' name='start_date' value='$start_date'>
+                    <input type='hidden' name='end_date' value='$end_date'>
+                    <input type='hidden' name='email' value='$email'>
+                    <input type='hidden' name='reason' value='$reason'>
+                    <input type='hidden' name='download_pdf' value='1'>
+                    <button type='submit' class='download-btn'>Download PDF Copy</button>
+                </form>
+            </div>
+        </div>
+        ";
+        
+        // Clean up - optionally delete the file after sending
+        // Comment this out if you want to keep the files on the server
+        unlink($pdfFilePath);
+    } else {
+        echo "Error: " . $sql . "<br>" . $conn->error;
+    }
+    exit;
 }
 
 // Get all tables in the database
@@ -206,30 +394,19 @@ if (!empty($teacherColumns)) {
     }
 }
 
-?>
+// Get teachers for dropdown
+$teachers = [];
+if ($teachersTableExists && $nameColumn) {
+    $teacherQuery = "SELECT $nameColumn FROM teachers";
+    $teacherResult = $conn->query($teacherQuery);
+    
+    if ($teacherResult && $teacherResult->num_rows > 0) {
+        while($row = $teacherResult->fetch_assoc()) {
+            $teachers[] = $row[$nameColumn];
+        }
+    }
+}
 
-<!-- <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LSGH Make Up Form</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class='container'>
-            <div class='header'>
-                <h2>Thank You!</h2>
-            </div>
-            <div class='success-message'>
-                Your submission has been received successfully. We appreciate your time and effort!
-            </div>
-            <p>We’ll get back to you as soon as possible. If you have any further questions, feel free to contact us anytime.</p>
-    </div>
-</body>
-</html> -->
-
-<?php
 // Close the database connection
 $conn->close();
 ?>
