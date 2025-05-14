@@ -3,7 +3,7 @@
 ob_start();
 
 // Database connection
-$conn = new mysqli("localhost", "root", "", "db");
+$conn = new mysqli("localhost", "root", "onelasalle", "db");
 
 // Check connection
 if ($conn->connect_error) {
@@ -60,6 +60,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pdf->AddPage();
     $pdf->SetTitle($title);
 
+    // if (file_exists('logo.png')) {
+    //      $pdf->Image('logo.png', 10, 10, 12.48, 19.26);
+    //  }
     // Set up logo and header
     $pdf->SetFont('Arial', 'B', 16);
     // Add a title at the top
@@ -156,32 +159,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Draw box around absence info
     $endY = $pdf->GetY();
     $pdf->Rect(10, $startY - 2, $tableWidth, $endY - $startY + 4);
-    
     $pdf->Ln(10);
     
-    // Add teacher signature section
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Teacher Approval', 0, 1, 'L');
+    // Add Parents signature section
     $pdf->SetFont('Arial', '', 10);
     
-    $pdf->Cell(90, 10, 'Signature: _________________________', 0, 0, 'L');
+    $pdf->Cell(90, 10, 'Parent\'s Signature: _________________________', 0, 0, 'L');
     $pdf->Cell(90, 10, 'Date: _______________', 0, 1, 'L');
     
     $pdf->Ln(5);
     
     // Add office signature section
-    $pdf->SetFont('Arial', 'B', 12);
-    $pdf->Cell(0, 10, 'Academic Office', 0, 1, 'L');
-    $pdf->SetFont('Arial', '', 10);
+    // $pdf->SetFont('Arial', 'B', 12);
+    // $pdf->Cell(0, 10, 'Academic Office', 0, 1, 'L');
+    // $pdf->SetFont('Arial', '', 10);
     
-    $pdf->Cell(90, 10, 'Signature: _________________________', 0, 0, 'L');
-    $pdf->Cell(90, 10, 'Date: _______________', 0, 1, 'L');
+    // $pdf->Cell(90, 10, 'Signature: _________________________', 0, 0, 'L');
+    // $pdf->Cell(90, 10, 'Date: _______________', 0, 1, 'L');
     
-    $pdf->Ln(10);
+    // $pdf->Ln(10);
     
     // Add footer note
     $pdf->SetFont('Arial', 'I', 8);
-    $pdf->Cell(0, 10, 'This form must be submitted to the teacher within three days of returning to school.', 0, 1, 'L');
+    $pdf->Cell(0, 10, 'This form must be submitted back to the teacher.', 0, 1, 'L');
     $pdf->Cell(0, 10, 'Form generated on ' . date('F j, Y, g:i a'), 0, 1, 'L');
     
     // Save PDF to file before we do anything else with it
@@ -304,8 +304,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 and to your teacher <strong>$teacher</strong>.
             </div>
             <p>We'll get back to you as soon as possible. If you have any further questions, feel free to contact us anytime.</p>
-            
-            <div class='pdf-download'>
+                        <div class='pdf-download'>
                 <form method='post' action=''>
                     <input type='hidden' name='first_name' value='$first_name'>
                     <input type='hidden' name='last_name' value='$last_name'>
@@ -318,7 +317,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type='hidden' name='email' value='$email'>
                     <input type='hidden' name='reason' value='$reason'>
                     <input type='hidden' name='download_pdf' value='1'>
-                    <button type='submit' class='download-btn'>Download PDF Copy</button>
+                    <button type='submit' class='download-btn'>Make Up Slip in PDF</button>
                 </form>
             </div>
         </div>

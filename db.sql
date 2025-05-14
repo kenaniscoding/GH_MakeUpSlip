@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 11, 2025 at 03:48 PM
+-- Generation Time: May 14, 2025 at 05:55 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,6 +24,26 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `admin`
+--
+
+CREATE TABLE `admin` (
+  `username` varchar(10) NOT NULL,
+  `passcode` varchar(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `admin`
+--
+
+INSERT INTO `admin` (`username`, `passcode`) VALUES
+('admin', 'test'),
+('guest', 'abc123'),
+('manager', 'secret');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `makeup_slips`
 --
 
@@ -39,15 +59,35 @@ CREATE TABLE `makeup_slips` (
   `end_date` datetime NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `email` varchar(255) NOT NULL,
-  `reason` varchar(255) NOT NULL
+  `reason` varchar(255) NOT NULL,
+  `status` varchar(50) DEFAULT 'Pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `makeup_slips`
 --
 
-INSERT INTO `makeup_slips` (`id`, `first_name`, `last_name`, `grade_level`, `section`, `subject`, `teacher_name`, `start_date`, `end_date`, `created_at`, `email`, `reason`) VALUES
-(2, 'Test1FN', 'Test1LN', 'Grade 1', 'A', 'Science', 'Ms. Ramos', '2025-05-06 00:00:00', '2025-05-09 00:00:00', '2025-05-11 13:45:13', 'banalkenan@gmail.com', 'Flu');
+INSERT INTO `makeup_slips` (`id`, `first_name`, `last_name`, `grade_level`, `section`, `subject`, `teacher_name`, `start_date`, `end_date`, `created_at`, `email`, `reason`, `status`) VALUES
+(2, 'Test1FN', 'Test1LN', 'Grade 1', 'A', 'Science', 'Ms. Ramos', '2025-05-06 00:00:00', '2025-05-09 00:00:00', '2025-05-11 13:45:13', 'banalkenan@gmail.com', 'Flu', 'Done'),
+(3, 'FN11', 'LN11', 'Grade 1', 'A', 'Filipino', 'Mrs. Cruz', '2025-05-05 00:00:00', '2025-05-06 00:00:00', '2025-05-12 04:29:27', 'banalkenan@gmail.com', 'Flu', 'Pending'),
+(4, 'FN12', 'LN12', 'Grade 1', 'B', 'Filipino', 'Mrs. Cruz', '2025-05-05 00:00:00', '2025-05-07 00:00:00', '2025-05-13 08:12:51', 'banalkenan@gmail.com', 'Wifi Disconnected', 'Pending'),
+(5, 'FN13', 'LN13', 'Grade 1', 'B', 'English', 'Mr. Santos', '2025-05-05 00:00:00', '2025-05-07 00:00:00', '2025-05-13 08:14:43', 'banalkenan@gmail.com', 'Wifi Disconnected', 'Pending'),
+(6, 'FN14', 'LN14', 'Grade 1', 'C', 'Filipino', 'Mrs. Cruz', '2025-05-05 00:00:00', '2025-05-07 00:00:00', '2025-05-13 08:19:07', 'banalkenan@gmail.com', 'Wifi Disconnected', 'Pending'),
+(7, 'FN15', 'LN15', 'Grade 1', 'J', 'Filipino', 'Mrs. Cruz', '2025-05-07 00:00:00', '2025-05-08 00:00:00', '2025-05-13 08:20:57', 'banalkenan@gmail.com', 'Sick', 'Pending'),
+(8, 'FN15', 'LN15', 'Grade 1', 'J', 'English', 'Mr. Santos', '2025-05-07 00:00:00', '2025-05-08 00:00:00', '2025-05-13 08:22:07', 'banalkenan@gmail.com', 'Sick', 'Pending'),
+(9, 'FN16', 'LN16', 'Grade 1', 'J', 'Filipino', 'Mrs. Cruz', '2025-05-07 00:00:00', '2025-05-08 00:00:00', '2025-05-13 08:26:02', 'banalkenan@gmail.com', 'Sick', 'Pending'),
+(10, 'FN16', 'LN16', 'Grade 1', 'A', 'Filipino', 'Mrs. Cruz', '2025-05-05 00:00:00', '2025-05-06 00:00:00', '2025-05-13 09:24:35', 'banalkenan@gmail.com', 'Sick', 'Pending'),
+(11, 'FN17', 'LN17', 'Grade 1', 'B', 'English', 'Mr. Santos', '2025-05-05 00:00:00', '2025-05-09 00:00:00', '2025-05-13 13:03:51', 'banalkenan@gmail.com', 'none', 'Pending'),
+(12, 'FN17', 'LN17', 'Grade 1', 'B', 'English', 'Mr. Santos', '2025-05-05 00:00:00', '2025-05-09 00:00:00', '2025-05-13 13:06:13', 'banalkenan@gmail.com', 'none', 'Pending'),
+(13, 'FN18', 'LN18', 'Grade 1', 'K', 'English', 'Mr. Santos', '2025-05-05 00:00:00', '2025-05-12 00:00:00', '2025-05-13 23:24:26', 'banalkenan@gmail.com', 'Flu', 'Pending'),
+(14, 'FN18', 'LN18', 'Grade 1', 'K', 'English', 'Mr. Santos', '2025-05-05 00:00:00', '2025-05-12 00:00:00', '2025-05-13 23:26:42', 'banalkenan@gmail.com', 'Flu', 'Pending'),
+(15, 'FN18', 'LN18', 'Grade 1', 'K', 'English', 'Mr. Santos', '2025-05-05 00:00:00', '2025-05-12 00:00:00', '2025-05-13 23:28:17', 'banalkenan@gmail.com', 'Flu', 'Pending'),
+(16, 'FN18', 'LN18', 'Grade 1', 'K', 'English', 'Mr. Santos', '2025-05-05 00:00:00', '2025-05-12 00:00:00', '2025-05-13 23:33:40', 'banalkenan@gmail.com', 'Flu', 'Pending'),
+(17, 'FN18', 'LN18', 'Grade 1', 'K', 'English', 'Mr. Santos', '2025-05-05 00:00:00', '2025-05-12 00:00:00', '2025-05-13 23:36:04', 'banalkenan@gmail.com', 'Flu', 'Pending'),
+(18, 'FN19', 'LN19', 'Grade 1', 'K', 'English', 'Mr. Santos', '2025-05-05 00:00:00', '2025-05-12 00:00:00', '2025-05-13 23:37:27', 'banalkenan@gmail.com', 'Flu', 'Pending'),
+(19, 'Image', 'LN20', 'Grade 1', 'K', 'Filipino', 'Mrs. Cruz', '2025-05-06 00:00:00', '2025-05-11 00:00:00', '2025-05-13 23:41:02', 'banalkenan@gmail.com', 'Flu', 'Pending'),
+(20, 'Image21', 'LN21', 'Grade 1', 'K', 'Filipino', 'Mrs. Cruz', '2025-05-06 00:00:00', '2025-05-11 00:00:00', '2025-05-13 23:46:55', 'banalkenan@gmail.com', 'Flu', 'Pending'),
+(21, 'Image21', 'LN21', 'Grade 1', 'K', 'Filipino', 'Mrs. Cruz', '2025-05-06 00:00:00', '2025-05-11 00:00:00', '2025-05-13 23:57:25', 'banalkenan@gmail.com', 'Flu', 'Pending');
 
 -- --------------------------------------------------------
 
@@ -129,6 +169,12 @@ INSERT INTO `teachers` (`teacher_id`, `teacher_name`, `subject`, `grade_level`, 
 --
 
 --
+-- Indexes for table `admin`
+--
+ALTER TABLE `admin`
+  ADD PRIMARY KEY (`username`);
+
+--
 -- Indexes for table `makeup_slips`
 --
 ALTER TABLE `makeup_slips`
@@ -148,7 +194,7 @@ ALTER TABLE `teachers`
 -- AUTO_INCREMENT for table `makeup_slips`
 --
 ALTER TABLE `makeup_slips`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `teachers`

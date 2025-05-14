@@ -10,7 +10,7 @@
 <body>
 <?php
 // Database connection
-$conn = new mysqli("localhost", "root", "", "db");
+$conn = new mysqli("localhost", "root", "onelasalle", "db");
 // Check connection
 if ($conn->connect_error) {
     die("<div class='error-message'>Connection failed: " . $conn->connect_error . "</div>");

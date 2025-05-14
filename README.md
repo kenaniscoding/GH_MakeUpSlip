@@ -4,18 +4,21 @@
 
 ## Features
 - Automatic Email to Parent/Student and Teacher
-- Admin Changable Grade Level, Subjects, and Teachers
+- Admin changable Grade Level, Subjects, and Teachers
+- Automatic PDF generator for parents to sign
   
 ## Tech Stack
-- **Frontend:** HTML and CSS
-- **Backend:** MySQL and PHP
+- **Frontend:** JavaScript (Ajax), CSS, HTML
+- **Backend:** MySQL and PHP (XAMPP)
 
 
 ## Requirements
-
-To run this project, you will need to have XAMPP installed
-
-[Link to XAMPP](https://www.apachefriends.org/download.html)
+- To run this project, you will need to have [XAMPP](https://www.apachefriends.org/download.html) installed 
+- Windows 10/11 is recommended for the email to work
+- To secure the phpmyadmin, go to C:\xampp\phpMyAdmin\config.inc.php and edit to cookie [video steps](https://youtu.be/LltCLFxQ2Yk?si=AbBG43zsRuVZp2nM)
+```bash
+    $cfg['Servers'][$i]['auth_type'] = 'cookie';
+```
 
 
 ## Troubleshooting
