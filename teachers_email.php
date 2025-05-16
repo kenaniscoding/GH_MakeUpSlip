@@ -169,16 +169,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     $pdf->Ln(5);
     
-    // Add office signature section
-    // $pdf->SetFont('Arial', 'B', 12);
-    // $pdf->Cell(0, 10, 'Academic Office', 0, 1, 'L');
-    // $pdf->SetFont('Arial', '', 10);
-    
-    // $pdf->Cell(90, 10, 'Signature: _________________________', 0, 0, 'L');
-    // $pdf->Cell(90, 10, 'Date: _______________', 0, 1, 'L');
-    
-    // $pdf->Ln(10);
-    
     // Add footer note
     $pdf->SetFont('Arial', 'I', 8);
     $pdf->Cell(0, 10, 'This form must be submitted back to the teacher.', 0, 1, 'L');

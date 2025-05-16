@@ -21,114 +21,111 @@ while ($row = $table_result->fetch_array()) {
     $tables[] = $row[0];
 }
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Welcome</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f9f9f9;
-        }
-        h1, h2 {
-            color: #333;
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-bottom: 40px;
-            background-color: white;
-        }
-        th, td {
-            padding: 8px;
-            border: 1px solid #ccc;
-        }
-        th {
-            background-color: #eee;
-            cursor: pointer;
-            position: relative;
-        }
-        th:hover {
-            background-color: #ddd;
-        }
-        th::after {
-            content: '';
-            position: absolute;
-            right: 8px;
-            color: #666;
-        }
-        th.sort-asc::after {
-            content: '▲';
-        }
-        th.sort-desc::after {
-            content: '▼';
-        }
-        .done {
-            color: green;
-            font-weight: bold;
-        }
-        .pending {
-            color: orange;
-            font-weight: bold;
-        }
-        form {
-            display: inline;
-        }
-        a {
-            text-decoration: none;
-            color: #d00;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="admin_style.css">
 </head>
 <body>
-    <h1>Welcome, <?php echo $login_session; ?></h1>
-    <h2><a href="logout.php">Sign Out</a></h2>
-    <?php foreach ($tables as $table): ?>
-        <h2>Table: <?php echo htmlspecialchars($table); ?></h2>
-        <?php
-        $result = $conn->query("SELECT * FROM `$table`");
-        if ($result && $result->num_rows > 0):
-            echo "<table class='sortable-table' id='table-" . htmlspecialchars($table) . "'><tr>";
-            // Print table headers
-            $first_row = $result->fetch_assoc();
-            $column_index = 0;
-            foreach (array_keys($first_row) as $col) {
-                echo "<th data-column='" . $column_index . "'>" . htmlspecialchars($col) . "</th>";
-                $column_index++;
-            }
-            // Add Action column for makeup_slips
-            if ($table === 'makeup_slips') {
-                echo "<th>Action</th>";
-            }
-            echo "</tr>";
-            // Rewind and display all rows
-            $result->data_seek(0);
-            while ($row = $result->fetch_assoc()) {
-                echo "<tr>";
-                foreach ($row as $key => $val) {
-                    echo "<td>" . htmlspecialchars($val) . "</td>";
-                }
-                // Action column for makeup_slips
-                if ($table === 'makeup_slips') {
-                    echo "<td>";
-                    if (strtolower($row['status']) == 'pending') {
-                        echo '<form method="POST">
-                                <input type="hidden" name="update_id" value="' . intval($row['id']) . '">
-                                <button type="submit">Mark as Done</button>
-                              </form>';
-                    } else {
-                        echo '<span class="done">Done</span>';
-                    }
-                    echo "</td>";
-                }
-                echo "</tr>";
-            }
-            echo "</table>";
-        else:
-            echo "<p>No records found in $table.</p>";
-        endif;
-        ?>
-    <?php endforeach; ?>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <h1><i class="fas fa-database"></i> <span>Database View</span></h1>
+            <div class="user-menu">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <?php echo substr($login_session, 0, 1); ?>
+                    </div>
+                    <div class="user-name"><?php echo $login_session; ?></div>
+                </div>
+                <a href="logout.php" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Sign Out</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="content">
+            <?php foreach ($tables as $table): ?>
+                <div class="table-card">
+                    <div class="table-card-header">
+                        <h2 class="table-card-title">
+                            <i class="fas fa-table"></i> 
+                            <?php echo htmlspecialchars($table); ?>
+                        </h2>
+                    </div>
+                    <div class="table-card-content">
+                        <?php
+                        $result = $conn->query("SELECT * FROM `$table`");
+                        if ($result && $result->num_rows > 0):
+                            echo "<table class='data-table sortable-table' id='table-" . htmlspecialchars($table) . "'><thead><tr>";
+                            
+                            // Print table headers
+                            $first_row = $result->fetch_assoc();
+                            $column_index = 0;
+                            foreach (array_keys($first_row) as $col) {
+                                echo "<th data-column='" . $column_index . "'>" . htmlspecialchars($col) . "</th>";
+                                $column_index++;
+                            }
+                            
+                            // Add Action column for makeup_slips
+                            if ($table === 'makeup_slips') {
+                                echo "<th>Action</th>";
+                            }
+                            
+                            echo "</tr></thead><tbody>";
+                            
+                            // Rewind and display all rows
+                            $result->data_seek(0);
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                foreach ($row as $key => $val) {
+                                    // Special handling for status field
+                                    if (strtolower($key) === 'status') {
+                                        $status_class = strtolower($val) === 'done' ? 'status-done' : 'status-pending';
+                                        echo "<td><span class='status-badge " . $status_class . "'>" . htmlspecialchars($val) . "</span></td>";
+                                    } else {
+                                        echo "<td>" . htmlspecialchars($val) . "</td>";
+                                    }
+                                }
+                                
+                                // Action column for makeup_slips
+                                if ($table === 'makeup_slips') {
+                                    echo "<td>";
+                                    if (strtolower($row['status']) == 'pending') {
+                                        echo '<form method="POST">
+                                                <input type="hidden" name="update_id" value="' . intval($row['id']) . '">
+                                                <button type="submit" class="action-btn">
+                                                    <i class="fas fa-check"></i> Mark as Done
+                                                </button>
+                                              </form>';
+                                    } else {
+                                        echo '<span class="status-badge status-done"><i class="fas fa-check-circle"></i> Completed</span>';
+                                    }
+                                    echo "</td>";
+                                }
+                                
+                                echo "</tr>";
+                            }
+                            
+                            echo "</tbody></table>";
+                        else:
+                            echo "<div class='empty-state'>
+                                    <i class='fas fa-database'></i>
+                                    <p>No records found in $table.</p>
+                                  </div>";
+                        endif;
+                        ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </main>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -160,13 +157,13 @@ while ($row = $table_result->fetch_array()) {
         });
 
         function sortTableByColumn(table, columnIndex, ascending = true) {
-            const tbody = table.querySelector('tbody') || table;
-            const rows = Array.from(tbody.querySelectorAll('tr:not(:first-child)'));
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
             
             // Sort rows based on cell content in the specified column
             const sortedRows = rows.sort((rowA, rowB) => {
-                const cellA = rowA.querySelectorAll('td')[columnIndex].textContent.trim();
-                const cellB = rowB.querySelectorAll('td')[columnIndex].textContent.trim();
+                let cellA = rowA.querySelectorAll('td')[columnIndex].textContent.trim();
+                let cellB = rowB.querySelectorAll('td')[columnIndex].textContent.trim();
                 
                 // Check if the values are numbers
                 const numA = parseFloat(cellA);
@@ -182,8 +179,10 @@ while ($row = $table_result->fetch_array()) {
                 }
             });
             
-            // Remove existing rows except the header
-            rows.forEach(row => tbody.removeChild(row));
+            // Remove existing rows
+            while (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
             
             // Add sorted rows back to the table
             sortedRows.forEach(row => tbody.appendChild(row));
