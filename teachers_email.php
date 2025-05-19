@@ -252,8 +252,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $teacherEmail = $teacherRow['email'];
             
             $teacherSubject = "Makeup Slip Request Notification";
-            $teacherBody = "Dear $teacher,\n\nA $grade student at section $section who goes by $first_name $last_name was absent from $subject on $start_date due to $reason. Likewise, He/She kindly filled up the makeup slip and request to retake the missed quiz.\n\nPlease review this request at your earliest convenience. The makeup slip request form is attached to this email.\n\nBest regards,\nAcademic Office";
-            
+            $teacherBody = "
+                <p>Dear $teacher,</p>
+
+                <p>
+                    A $grade student at section $section who goes by 
+                    $first_name $last_name was absent from 
+                    $subject on $start_date to $end_date due to $reason.
+                </p>
+
+                <p>
+                    Likewise, he/she kindly filled up the makeup slip and requests to retake the missed quiz. 
+                    <em><strong>THIS IS THE INITIAL TEST EMAIL MADE BY THE EDTECH OFFICE</strong></em>.
+                </p>
+
+                <p>
+                    Please review this request at your earliest convenience. The makeup slip request form is attached to this email.
+                </p>
+
+                <p>Best regards,<br>Academic Office</p>
+            ";
+
+
+
             // Prepare teacher email with attachment
             $teacher_message = "--$boundary\r\n";
             $teacher_message .= "Content-Type: text/plain; charset=ISO-8859-1\r\n";
@@ -309,6 +330,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type='hidden' name='download_pdf' value='1'>
                     <button type='submit' class='download-btn'>Make Up Slip in PDF</button>
                 </form>
+            </div>
+            <div style='margin-top: 20px; padding: 10px; border: 1px solid #ddd; background: #f9f9f9;'>
+                <h3>Send us Feedback at:</h3>
+                <p style='font-family: Arial, sans-serif; color: #333;'>edtech@lsgh.edu.ph</p>
             </div>
         </div>
         ";
