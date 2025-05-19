@@ -281,12 +281,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <meta charset='UTF-8'>
             <meta name='viewport' content='width=device-width, initial-scale=1.0'>
             <title>LSGH Makeup Quiz Request Form</title>
-            <link rel='stylesheet' href='style.css'>
+            <link rel='stylesheet' href='css/style.css'>
             <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js'></script>
         </head>
 
         <div class='container'>
-            <div class='header'>
+            <div class='header'>    
                 <h2>Thank You!</h2>
             </div>
             <div class='success-message'>

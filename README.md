@@ -14,6 +14,7 @@
 
 ## Requirements
 - To run this project, you will need to have [XAMPP](https://www.apachefriends.org/download.html) installed 
+- Gmail account not older than 2024
 - Windows 10/11 is recommended for the email to work
 - To secure the phpmyadmin, go to C:\xampp\phpMyAdmin\config.inc.php and edit to cookie [video steps](https://youtu.be/LltCLFxQ2Yk?si=AbBG43zsRuVZp2nM)
 ```bash
