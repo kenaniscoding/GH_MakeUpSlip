@@ -6,6 +6,65 @@
     <title>LSGH Makeup Quiz Request Form</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        /* Loading Overlay Styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-popup {
+            background-color: white;
+            padding: 30px 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 300px;
+            width: 90%;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtext {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* Disable form during submission */
+        .form-disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+    </style>
 </head>
 <body>
 <?php
@@ -35,12 +94,21 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
 
 ?>
 
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-popup">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Processing Your Request</div>
+        <div class="loading-subtext">Please wait while we submit your makeup quiz request. This may take a few moments...</div>
+    </div>
+</div>
+
 <div class="container">
     <div class="header">
         <h2>LSGH Makeup Quiz Request Form</h2>
     </div>
     
-    <form method="POST" action="teachers_email.php">
+    <form id="makeupQuizForm" method="POST" action="teachers_email.php">
         <!-- Data Privacy Agreement Checkbox -->
         <div class="form-check mb-3" style="display: flex; align-items: flex-start; gap: 10px;">
         <input class="form-check-input" type="checkbox" id="privacy_agree" name="privacy_agree" required style="margin-top: 4px;">
@@ -162,7 +230,7 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
             <input type="date" id="end_date" name="end_date" max="<?php echo date('Y-m-d'); ?>" required>
         </div>
         
-        <button type="submit">Submit Makeup Slip</button>
+        <button type="submit" id="submitBtn">Submit Makeup Slip</button>
     </form>
     
     <!-- Debug info (hidden in production) -->
@@ -173,6 +241,35 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
         <p style="font-family: Arial, sans-serif; color: #333;">edtech@lsgh.edu.ph</p>
     </div>
 </div>
+
+<script>
+// Form submission with loading popup
+document.getElementById('makeupQuizForm').addEventListener('submit', function(e) {
+    // Show loading overlay
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    // Add disabled class to form to prevent user interaction
+    document.querySelector('.container').classList.add('form-disabled');
+    
+    // Change submit button text
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.innerHTML = 'Submitting...';
+    submitBtn.disabled = true;
+});
+
+// Optional: Hide loading overlay if there's an error or if user navigates back
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        // Page was loaded from cache (user pressed back button)
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.querySelector('.container').classList.remove('form-disabled');
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = 'Submit Makeup Slip';
+        submitBtn.disabled = false;
+    }
+});
+</script>
+
 <script src="updateTeachers.js"></script>
 
 <?php
