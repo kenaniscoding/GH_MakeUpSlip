@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <style>
-        /* Loading Overlay Styles */
+    /* Loading Overlay Styles */
         .loading-overlay {
             position: fixed;
             top: 0;
