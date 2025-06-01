@@ -243,34 +243,10 @@ if ($gradesDebug && $gradesDebug->num_rows > 0) {
 </div>
 
 <script>
-// Form submission with loading popup
-document.getElementById('makeupQuizForm').addEventListener('submit', function(e) {
-    // Show loading overlay
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    
-    // Add disabled class to form to prevent user interaction
-    document.querySelector('.container').classList.add('form-disabled');
-    
-    // Change submit button text
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.innerHTML = 'Submitting...';
-    submitBtn.disabled = true;
-});
 
-// Optional: Hide loading overlay if there's an error or if user navigates back
-window.addEventListener('pageshow', function(event) {
-    if (event.persisted) {
-        // Page was loaded from cache (user pressed back button)
-        document.getElementById('loadingOverlay').style.display = 'none';
-        document.querySelector('.container').classList.remove('form-disabled');
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.innerHTML = 'Submit Makeup Slip';
-        submitBtn.disabled = false;
-    }
-});
 </script>
 
-<script src="updateTeachers.js"></script>
+<script src="js/updateTeachers.js"></script>
 
 <?php
 // Close the database connection
